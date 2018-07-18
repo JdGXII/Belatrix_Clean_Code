@@ -5,11 +5,11 @@ namespace CleanCode.MagicNumbers
     {
         public void ApproveDocument(int status)
         {
-            if (status == 1)
+            if (status == DocumentStatus.documentApprovedAsInt)
             {
                 // ...
             }
-            else if (status == 2)
+            else if (status == DocumentStatus.documentDeniedAsInt)
             {
                 // ...
             }
@@ -17,15 +17,24 @@ namespace CleanCode.MagicNumbers
 
         public void RejectDoument(string status)
         {
+
             switch (status)
             {
-                case "1":
+                case DocumentStatus.documentApprovedAsString:
                     // ...
                     break;
-                case "2":
+                case DocumentStatus.documentDeniedAsString:
                     // ...
                     break;
             }
         }
+    }
+
+    public static class DocumentStatus
+    {
+        public const string documentApprovedAsString = "1";
+        public const string documentDeniedAsString = "2";
+        public const int documentApprovedAsInt = 1;
+        public const int documentDeniedAsInt = 2;
     }
 }
