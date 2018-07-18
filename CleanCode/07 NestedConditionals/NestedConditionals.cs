@@ -7,6 +7,11 @@ namespace CleanCode.NestedConditionals
         public int LoyaltyPoints { get; set; }
     }
 
+    public enum CustomerLevel
+    {
+        Gold = 100,
+    }
+
     public class Reservation
     {
         public Reservation(Customer customer, DateTime dateTime)
@@ -21,36 +26,26 @@ namespace CleanCode.NestedConditionals
 
         public void Cancel()
         {
-            // Gold customers can cancel up to 24 hours before
-            if (Customer.LoyaltyPoints > 100)
-            {
-                // If reservation already started throw exception
-                if (DateTime.Now > From)
-                {
-                    throw new InvalidOperationException("It's too late to cancel.");
-                }
-                if ((From - DateTime.Now).TotalHours < 24)
-                {
-                    throw new InvalidOperationException("It's too late to cancel.");
-                }
-                IsCanceled = true;
-            }
-            else
-            {
-                // Regular customers can cancel up to 48 hours before
+            bool isGoldLevel = CheckCustomerLevel(Customer.LoyaltyPoints);
+            if (isGoldLevel) ValidateCancelation(24);
+                    
+            ValidateCancelation(48);
 
-                // If reservation already started throw exception
-                if (DateTime.Now > From)
-                {
-                    throw new InvalidOperationException("It's too late to cancel.");
-                }
-                if ((From - DateTime.Now).TotalHours < 48)
-                {
-                    throw new InvalidOperationException("It's too late to cancel.");
-                }
-                IsCanceled = true;
-            }
+            IsCanceled = true;
         }
 
+        private bool CheckCustomerLevel(int loyaltyPoints)
+        {
+            return (int)CustomerLevel.Gold < loyaltyPoints;
+        }
+    
+        private void ValidateCancelation(int hoursBeforeEvent)
+        {
+            if (DateTime.Now > From || (From - DateTime.Now).TotalHours < hoursBeforeEvent)
+                throw new InvalidOperationException("It's too late to cancel.");
+        }
+
+   
+        
     }
 }
