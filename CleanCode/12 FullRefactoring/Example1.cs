@@ -1,3 +1,4 @@
+using CleanCode._12_FullRefactoring;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,70 +6,83 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+
 namespace Project.UserControls
 {
     public class PostControl : System.Web.UI.UserControl
     {
-        private PostDbContext DBContext;
+        private readonly PostDAO _postDao;
+        public Label PostBody { get; set; }
+        public Label PostTitle { get; set; }
+        public int? PostId { get; set; }
 
+
+        public PostControl()
+        {
+            _postDao = new PostDAO();
+        }
+
+        private Post GetPost()
+        {
+            return new Post
+            {
+                Id = Convert.ToInt32(PostId.Value),
+                Title = PostTitle.Text.Trim(),
+                Body = PostBody.Text.Trim()
+            };
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            DBContext = new PostDbContext();
-
             if (Page.IsPostBack)
-            {
-                PostValidator validator = new PostValidator();
-                Post entity = new Post()
-                {
-                    // Map form fields to entity properties
-                    Id = Convert.ToInt32(PostId.Value),
-                    Title = PostTitle.Text.Trim(),
-                    Body = PostBody.Text.Trim()
-                };
-                ValidationResult results = validator.Validate(entity);
+                SavePost();
+            else
+                RegularPageLoad();
+        }
 
-                if (results.IsValid)
+        private void RegularPageLoad()
+        {
+            Post entity = _postDao.GetPostById(Convert.ToInt32(Request.QueryString["id"]);
+            PostBody.Text = entity.Body;
+            PostTitle.Text = entity.Title;
+        }
+
+        private void SavePost()
+        {
+            Post post = GetPost();
+            ValidationResult validation = PostValidation(post);
+            if (validation.IsValid)
+                _postDao.AddPost(post);
+
+            HandleErrors(validation.Errors);
+        }
+
+        private void HandleErrors(IEnumerable<ValidationError> errors)
+        {
+            BulletedList summary = (BulletedList)FindControl("ErrorSummary");            
+            foreach (var failure in errors)
+            {
+                Label errorMessage = FindControl(failure.PropertyName + "Error") as Label;
+
+                if (errorMessage == null)
                 {
-                    // Save to the database and continue to the next page
-                    DBContext.Posts.Add(entity);
-                    DBContext.SaveChanges();
+                    summary.Items.Add(new ListItem(failure.ErrorMessage));
                 }
                 else
                 {
-                    BulletedList summary = (BulletedList)FindControl("ErrorSummary");
-
-                    // Display errors to the user
-                    foreach (var failure in results.Errors)
-                    {
-                        Label errorMessage = FindControl(failure.PropertyName + "Error") as Label;
-
-                        if (errorMessage == null)
-                        {
-                            summary.Items.Add(new ListItem(failure.ErrorMessage));
-                        }
-                        else
-                        {
-                            errorMessage.Text = failure.ErrorMessage;
-                        }
-                    }
+                    errorMessage.Text = failure.ErrorMessage;
                 }
-            }
-            else
-            {
-                // Display form
-                Post entity = DBContext.Posts.SingleOrDefault(p => p.Id == Convert.ToInt32(Request.QueryString["id"]));
-                PostBody.Text = entity.Body;
-                PostTitle.Text = entity.Title;
-
             }
         }
 
-        public Label PostBody { get; set; }
+        private ValidationResult PostValidation(Post entity)
+        {
+            PostValidator validator = new PostValidator();
+            return validator.Validate(entity);
+        }
 
-        public Label PostTitle { get; set; }
 
-        public int? PostId { get; set; }
+
     }
 
     #region helpers
