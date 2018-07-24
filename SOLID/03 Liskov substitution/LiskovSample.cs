@@ -2,21 +2,20 @@
 
 namespace SOLID._03_Liskov_substitution
 {
+    public interface IBonusable
+    {
+        decimal CalculateBonus(decimal salary);
+    }
+
     public abstract class Employee
     {
         public int ID { get; set; }
         public string Name { get; set; }
 
-        public Employee()
-        {
-        }
-
         public Employee(int id, string name)
         {
             this.ID = id; this.Name = name;
         }
-
-        public abstract decimal CalculateBonus(decimal salary);
 
         public override string ToString()
         {
@@ -24,27 +23,22 @@ namespace SOLID._03_Liskov_substitution
         }
     }
 
-    public class PermanentEmployee : Employee
+    public class PermanentEmployee : Employee, IBonusable
     {
-        public PermanentEmployee()
-        { }
+        public PermanentEmployee(int id, string name) : base(id, name) { }
 
-        public PermanentEmployee(int id, string name) : base(id, name)
-        { }
-        public override decimal CalculateBonus(decimal salary)
+        public decimal CalculateBonus(decimal salary)
         {
             return salary * .1M;
         }
     }
 
-    public class TemporaryEmployee : Employee
+    public class TemporaryEmployee : Employee, IBonusable
     {
-        public TemporaryEmployee()
-        { }
+  
+        public TemporaryEmployee(int id, string name) : base(id, name) { }
 
-        public TemporaryEmployee(int id, string name) : base(id, name)
-        { }
-        public override decimal CalculateBonus(decimal salary)
+        public decimal CalculateBonus(decimal salary)
         {
             return salary * .05M;
         }
@@ -52,14 +46,7 @@ namespace SOLID._03_Liskov_substitution
 
     public class ContractEmployee : Employee
     {
-        public ContractEmployee()
-        { }
+        public ContractEmployee(int id, string name) : base(id, name) { }
 
-        public ContractEmployee(int id, string name) : base(id, name)
-        { }
-        public override decimal CalculateBonus(decimal salary)
-        {
-            throw new NotImplementedException();
-        }
-    }
+     }
 }
